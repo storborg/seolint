@@ -11,7 +11,9 @@ from lxml import etree
 
 def extract_keywords(text):
     if text:
-        return re.sub('[^A-Za-z0-9\-\']', ' ', text).lower().split()
+        return [kw.lower()
+                for kw in re.sub('[^A-Za-z0-9\-\']', ' ', text).split()
+                if kw not in get_stop_words()]
     else:
         return []
 
@@ -62,6 +64,12 @@ def frequency(tree):
     keywords.sort(key=itemgetter(1), reverse=True)
     for kw, count in keywords:
         print "%4d %s" % (count, kw)
+
+
+def get_stop_words():
+    return ('a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for',
+            'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that',
+            'the', 'to', 'was', 'were', 'will', 'with')
 
 
 def main():
