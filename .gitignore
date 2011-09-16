@@ -13,6 +13,8 @@
 
 # Egg metadata.
 seolint.egg-info/
+build/
+dist/
 
 # Test coverage data.
 cover/
