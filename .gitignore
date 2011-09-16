@@ -1,0 +1,18 @@
+# Base ignores:
+# Silly OS X trash files.
+.DS_Store
+
+# vim backup files.
+.*.swp
+
+# other editor backup files.
+*~
+
+# Compiled python modules.
+*.pyc
+
+# Egg metadata.
+seolint.egg-info/
+
+# Test coverage data.
+cover/
