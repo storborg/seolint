@@ -2,7 +2,7 @@ from setuptools import setup
 
 
 setup(name="seolint",
-      version='0.1',
+      version='0.2',
       description="SEO linting tool.",
       long_description='',
       classifiers=[
