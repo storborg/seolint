@@ -68,7 +68,8 @@ def frequency(tree, ngram_size=1):
         keywords, total = count_ngrams(tree, ngram_size)
     keywords.sort(key=itemgetter(1), reverse=True)
     for kw, count in keywords:
-        print "%4d %s (%.2f%%)" % (count, kw, ((count / total) * 100))
+        if count > 1:
+            print "%4d %s (%.2f%%)" % (count, kw, ((count / total) * 100))
 
 
 def count_ngrams(tree, size):
