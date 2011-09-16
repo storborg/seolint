@@ -9,30 +9,44 @@ from lxml import etree
 
 def extract_keywords(text):
     if text:
-        return re.sub('[^A-Za-z0-9\-]', ' ', text).lower().split()
+        return re.sub('[^A-Za-z0-9\-\']', ' ', text).lower().split()
     else:
         return []
 
 
-def keywords_for_tag(tag, tree):
+def keywords_for_tag(tree, tag, attr=None):
     sel = CSSSelector(tag)
     keywords = []
     for e in sel(tree):
-        keywords.extend(extract_keywords(e.text))
+        if attr:
+            text = e.get(attr, '')
+        else:
+            text = e.text
+        keywords.extend(extract_keywords(text))
     return keywords
+
+
+def print_keywords(title, kw):
+    kw = " ".join(kw)
+    if kw:
+        print
+        print "*** %s keywords ***" % title
+        print kw
 
 
 def lint(url):
     webf = urlopen(url)
     tree = parse(webf)
+
     check_tags = ['title', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                  'strong', 'em', 'p']
+                  'strong', 'em', 'p', 'li']
     for tag in check_tags:
-        kw = " ".join(keywords_for_tag(tag, tree))
-        if kw:
-            print
-            print "*** %s keywords ***" % tag
-            print kw
+        print_keywords(tag, keywords_for_tag(tree, tag))
+
+    check_attrs = [('img', 'alt'), ('img', 'title')]
+    for tag, attr in check_attrs:
+        print_keywords("%s:%s" % (tag, attr),
+                       keywords_for_tag(tree, tag, attr))
 
 
 def main():
