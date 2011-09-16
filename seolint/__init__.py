@@ -55,15 +55,15 @@ def count_keywords(tree):
     for e in tree.iter():
         if e.tag not in ('script', 'style'):
             for kw in extract_keywords(e.text):
-                keywords[kw] += 1
-    return keywords
+                keywords[kw] += 1.0
+    return (keywords.items(), sum(count for count in keywords.values()))
 
 
 def frequency(tree):
-    keywords = count_keywords(tree).items()
+    keywords, total = count_keywords(tree)
     keywords.sort(key=itemgetter(1), reverse=True)
     for kw, count in keywords:
-        print "%4d %s" % (count, kw)
+        print "%4d %s (%.2f%%)" % (count, kw, ((count / total) * 100))
 
 
 def get_stop_words():
