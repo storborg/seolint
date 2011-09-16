@@ -1,6 +1,8 @@
 import re
 from urllib import urlopen
 from argparse import ArgumentParser
+from collections import defaultdict
+from operator import itemgetter
 
 from lxml.cssselect import CSSSelector
 from lxml.html import parse
@@ -34,10 +36,7 @@ def print_keywords(title, kw):
         print kw
 
 
-def lint(url):
-    webf = urlopen(url)
-    tree = parse(webf)
-
+def tags(tree):
     check_tags = ['title', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
                   'strong', 'em', 'p', 'li']
     for tag in check_tags:
@@ -49,15 +48,39 @@ def lint(url):
                        keywords_for_tag(tree, tag, attr))
 
 
+def count_keywords(tree):
+    keywords = defaultdict(int)
+    for e in tree.iter():
+        if e.tag not in ('script', 'style'):
+            for kw in extract_keywords(e.text):
+                keywords[kw] += 1
+    return keywords
+
+
+def frequency(tree):
+    keywords = count_keywords(tree).items()
+    keywords.sort(key=itemgetter(1), reverse=True)
+    for kw, count in keywords:
+        print "%4d %s" % (count, kw)
+
+
 def main():
     p = ArgumentParser(description='Checks on-page factors. Very basic.')
     p.add_argument('-v', '--verbose', dest='verbose', action='store_true',
                    help='print detailed output')
+    p.add_argument('action', type=str,
+                   choices=('tags', 'frequency')),
     p.add_argument('url', type=str,
                    help='url to check')
     args = p.parse_args()
     print "Fetching %s" % args.url
-    lint(args.url)
+    webf = urlopen(args.url)
+    tree = parse(webf)
+
+    if args.action == 'tags':
+        tags(tree)
+    elif args.action == 'frequency':
+        frequency(tree)
 
 
 if __name__ == '__main__':
