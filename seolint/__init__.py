@@ -10,10 +10,12 @@ from lxml import etree
 
 
 def extract_keywords(text):
+    # We probably don't care about words shorter than 3 letters
+    min_word_size = 3
     if text:
         return [kw.lower()
                 for kw in re.sub('[^A-Za-z0-9\-\']', ' ', text).split()
-                if kw not in get_stop_words()]
+                if kw not in get_stop_words() and len(kw) >= min_word_size]
     else:
         return []
 
