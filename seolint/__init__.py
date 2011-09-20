@@ -1,9 +1,12 @@
+import gevent
+from gevent import monkey
+monkey.patch_all()
+
 import re
 from urllib import urlopen
 from argparse import ArgumentParser
 from collections import defaultdict
 from operator import itemgetter
-
 from lxml.cssselect import CSSSelector
 from lxml.html import parse
 from lxml import etree
@@ -92,12 +95,43 @@ def get_stop_words():
             'the', 'to', 'was', 'were', 'will', 'with')
 
 
+def get_http_status(url):
+    return urlopen(url).getcode()
+    
+
+def check_links(url, tree):
+    root = tree.getroot()
+    root.make_links_absolute(url)
+    urls = set()
+    for el, attr, link, pos in root.iterlinks():
+        urls.add(link)
+    print "Checking %d links..." % len(urls)
+
+    job_urls = {}
+    jobs = []
+    for url in urls:
+        job = gevent.spawn(get_http_status, url)
+        jobs.append(job)
+        job_urls[job] = url
+
+    gevent.joinall(jobs, timeout=20)
+    for job in jobs:
+        url = job_urls[job]
+        if job.value:
+            status = job.value
+        else:
+            status = 'TIMEOUT'
+        if status != 200:
+            print "%s - %s" % (status, url)
+
+
 def main():
     p = ArgumentParser(description='Checks on-page factors. Very basic.')
     p.add_argument('-v', '--verbose', dest='verbose', action='store_true',
                    help='print detailed output')
     p.add_argument('action', type=str,
-                   choices=('tags', 'frequency', 'digrams', 'trigrams')),
+                   choices=('tags', 'frequency', 'digrams', 'trigrams',
+                            'check-links')),
     p.add_argument('url', type=str,
                    help='url to check')
     args = p.parse_args()
@@ -113,6 +147,8 @@ def main():
         frequency(tree, ngram_size=2)
     elif args.action == 'trigrams':
         frequency(tree, ngram_size=3)
+    elif args.action == 'check-links':
+        check_links(args.url, tree)
 
 
 if __name__ == '__main__':

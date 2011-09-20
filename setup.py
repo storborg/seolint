@@ -15,6 +15,7 @@ setup(name="seolint",
       url='http://github.com/storborg/seolint',
       install_requires=[
           'lxml',
+          'gevent',
       ],
       license='MIT',
       packages=['seolint'],
