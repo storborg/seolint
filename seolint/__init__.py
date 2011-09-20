@@ -102,7 +102,7 @@ def get_http_status(url):
         return 'UNKNOWN'
     
 
-def check_links(url, tree):
+def check_links(url, tree, timeout=20):
     root = tree.getroot()
     root.make_links_absolute(url)
     urls = set()
@@ -117,7 +117,7 @@ def check_links(url, tree):
         jobs.append(job)
         job_urls[job] = url
 
-    gevent.joinall(jobs, timeout=20)
+    gevent.joinall(jobs, timeout=timeout)
     for job in jobs:
         url = job_urls[job]
         if job.value:
@@ -132,6 +132,9 @@ def main():
     p = ArgumentParser(description='Checks on-page factors. Very basic.')
     p.add_argument('-v', '--verbose', dest='verbose', action='store_true',
                    help='print detailed output')
+    p.add_argument('-t', '--timeout', dest='timeout', type=int,
+                   default=20,
+                   help='timeout in seconds (default 20)')
     p.add_argument('action', type=str,
                    choices=('tags', 'frequency', 'digrams', 'trigrams',
                             'check-links')),
@@ -151,7 +154,7 @@ def main():
     elif args.action == 'trigrams':
         frequency(tree, ngram_size=3)
     elif args.action == 'check-links':
-        check_links(args.url, tree)
+        check_links(args.url, tree, timeout=args.timeout)
 
 
 if __name__ == '__main__':
