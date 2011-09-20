@@ -96,7 +96,10 @@ def get_stop_words():
 
 
 def get_http_status(url):
-    return urlopen(url).getcode()
+    if url.startswith('http'):
+        return urlopen(url).getcode()
+    else:
+        return 'UNKNOWN'
     
 
 def check_links(url, tree):
